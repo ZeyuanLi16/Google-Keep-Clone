@@ -4,6 +4,7 @@ class App {
         this.$noteTitle = document.querySelector('#note-title');
         this.$noteText = document.querySelector("#note-text");
         this.$formButtons = document.querySelector('#form-buttons');
+        this.$formCloseButton = document.querySelector('#form-close-button');
         this.$placeholder = document.querySelector('#placeholder');
         this.$notes = document.querySelector('#notes');
 
@@ -20,26 +21,31 @@ class App {
         })
 
         // sumit event, add new note
-        document.body.addEventListener('submit', event =>{
+        this.$form.addEventListener('submit', event =>{
             event.preventDefault(); // prevent default event when submit, so there is no refresh, the form stay open
-            const title = this.$noteTitle.value;   
-            const text = this.$noteText.value;          
-            this.$noteTitle.value = '';
-            this.$noteText.value = '';
-            const hasNode = title || text; // when both has text
-            if(hasNode){
-                this.addNote({ title, text }); // pass in as object, instead of parameter
-            }   
+            this.submit();
+        })
+
+        // close button
+        this.$formCloseButton.addEventListener('click', event =>{
+            event.stopPropagation(); 
+            /*
+             Close button when click, will also call the 
+            document.body.addEventListener('click', event) and then handleFormClick(event) to open the form
+            So we call .stopPropagation() to prevent the event propogate 
+            */
+            this.closeForm();
         })
     }
 
     handleFormClick(event) {
         const isFormClicked = this.$form.contains(event.target); 
         // event.target is exactly the html element that got clicked, like title, text and buttons
-        
+
         if (isFormClicked) {
             this.openForm();
         } else {
+            this.submit();
             this.closeForm();
         }
     }
@@ -56,10 +62,21 @@ class App {
         this.$formButtons.style.display = 'none';  
     }
 
-    addNote(note) {
+    submit() {
+        const title = this.$noteTitle.value;   
+        const text = this.$noteText.value;          
+        const hasNode = title || text; // when both has text
+        if(hasNode){
+            this.$noteTitle.value = '';
+            this.$noteText.value = '';
+            this.addNote(title, text); 
+        }   
+    }
+
+    addNote(title, text) {
         const newNote = {
-            title: note.title,
-            text: note.text,
+            title,
+            text,
             color: 'white',
             id: this.notes.length > 0 ? this.notes[this.notes.length - 1].id + 1 : 1
         };
