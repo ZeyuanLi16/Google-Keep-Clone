@@ -13,6 +13,7 @@ class App {
         this.$modalTitle = document.querySelector(".modal-title");
         this.$modalText = document.querySelector(".modal-text");
         this.$modalCloseButton = document.querySelector('.modal-close-button');
+        this.$colorTooltip = document.querySelector('#color-tooltip');
 
         /* Data related variables */
         this.notes = [];
@@ -50,6 +51,30 @@ class App {
 
         this.$modalCloseButton.addEventListener('click', event => {
             this.closeModal(event);  
+        })
+
+        // Open/close tooltip
+        document.body.addEventListener('mouseover', event => {
+            this.openTooltip(event);  
+        });
+
+        document.body.addEventListener('mouseout', event => {
+            this.closeTooltip(event);  
+        });
+
+        this.$colorTooltip.addEventListener('mouseover', function() { // use function() to reference this, arrow functon does not have this
+            this.style.display = 'flex';  
+        })
+        
+        this.$colorTooltip.addEventListener('mouseout',  function() {
+            this.style.display = 'none'; 
+        })
+        
+        this.$colorTooltip.addEventListener('click', event => {
+            const color = event.target.dataset.color; 
+            if (color) {
+                this.editNoteColor(color);  
+            }
         })
     }
 
@@ -120,7 +145,7 @@ class App {
                 <div class="note-text">${note.text}</div>
                 <div class="toolbar-container">
                     <div class="toolbar">
-                    <img class="toolbar-color" src="https://icon.now.sh/palette">
+                    <img class="toolbar-color" data-id="${note.id}" src="https://icon.now.sh/palette">
                     <img class="toolbar-delete" src="https://icon.now.sh/delete">
                     </div>
                 </div>
@@ -149,8 +174,29 @@ class App {
         this.title = $noteTitle.innerText;
         this.text = $noteText.innerText;
         this.id = $selectedNote.dataset.idd; // Get id so we can update target note in notes
-     }
+    }
 
+    openTooltip(event){
+        if (!event.target.matches('.toolbar-color')) return;
+        this.id = event.target.dataset.id;
+        const noteCoords = event.target.getBoundingClientRect();
+        const horizontal = window.scrollX + noteCoords.left;
+        const vertical = window.scrollY + noteCoords.top;
+        this.$colorTooltip.style.transform = `translate(${horizontal}px, ${vertical}px)`;
+        this.$colorTooltip.style.display = 'flex';        
+    }
+
+    closeTooltip(event) {
+        if (!event.target.matches('.toolbar-color')) return;
+        this.$colorTooltip.style.display = 'none';  
+    }
+
+    editNoteColor(color) {
+        this.notes = this.notes.map(note =>
+            note.id === Number(this.id) ? { ...note, color } : note
+        );
+        this.displayNotes();
+    }
   }
   
   new App();

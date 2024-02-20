@@ -294,7 +294,7 @@
     position: absolute;
     top: -40;
     background: #fff;
-    border: 1px solid black;
+    border: 1px solid lightgrey;
     left: 0;
     z-index: 20;
     border-radius: 5px;
