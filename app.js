@@ -8,8 +8,17 @@ class App {
         this.$placeholder = document.querySelector('#placeholder');
         this.$notes = document.querySelector('#notes');
 
+        /* Modal for selected note */
+        this.$modal = document.querySelector(".modal");
+        this.$modalTitle = document.querySelector(".modal-title");
+        this.$modalText = document.querySelector(".modal-text");
+        this.$modalCloseButton = document.querySelector('.modal-close-button');
+
         /* Data related variables */
         this.notes = [];
+        this.title = ''; // for selected note
+        this.text = ''; // for selected note
+        this.id = ''; // for selected note
 
         this.addEventListeners(); // Add event listener in constructor
     }
@@ -18,6 +27,8 @@ class App {
         // click the form appear and disappear click away
         document.body.addEventListener('click', event =>{
             this.handleFormClick(event);
+            this.selectNote(event);
+            this.openModal(event); // open the note detail after clicking it
         })
 
         // sumit event, add new note
@@ -26,7 +37,7 @@ class App {
             this.submit();
         })
 
-        // close button
+        // close button 
         this.$formCloseButton.addEventListener('click', event =>{
             event.stopPropagation(); 
             /*
@@ -35,6 +46,10 @@ class App {
             So we call .stopPropagation() to prevent the event propogate 
             */
             this.closeForm();
+        })
+
+        this.$modalCloseButton.addEventListener('click', event => {
+            this.closeModal(event);  
         })
     }
 
@@ -85,12 +100,22 @@ class App {
         this.displayNotes(); // Show all the notes
     }
 
+    editNote() {
+        const title = this.$modalTitle.value;
+        const text = this.$modalText.value;
+        this.notes = this.notes.map(note =>
+            note.id === Number(this.id) ? { ...note, title, text } : note
+        )
+
+        this.displayNotes(); // Call to update the ui, otherwise it won't update
+    }
+
     displayNotes(){
         // Hide the empty note placeholder
         const hasNode = this.notes.length > 0;
         this.$placeholder.style.display = hasNode? 'none': 'flex';
         this.$notes.innerHTML = this.notes.map(note => `
-            <div style="background: ${note.color};" class="note">
+            <div style="background: ${note.color};" class="note" data-idd="${note.id}">
                 <div class="${note.title && 'note-title'}">${note.title}</div>
                 <div class="note-text">${note.text}</div>
                 <div class="toolbar-container">
@@ -100,8 +125,31 @@ class App {
                     </div>
                 </div>
             </div>
-        `).join(""); // without join the array to string, there will be a , at end of each element
+        `).join(""); // join the array to string, or there will be a , at end of each element
+        // data-* attributes: When you access .dataset.id on an element, JavaScript looks for an attribute with the name data-id on that element. The value of this attribute is then returned. 
     }
+
+    openModal(event){
+        if(event.target.closest(".note")){
+            this.$modal.classList.toggle("open-modal"); // toggle class name, so we can open and hide mode
+            this.$modalTitle.value = this.title;
+            this.$modalText.value = this.text;
+        }
+    }
+
+    closeModal(event){
+        this.editNote();
+        this.$modal.classList.toggle('open-modal'); // Toggle class to hide modal.
+    }
+
+    selectNote(event) {
+        const $selectedNote = event.target.closest('.note');
+        if (!$selectedNote) return;
+        const [$noteTitle, $noteText] = $selectedNote.children; // Use array destructuring to select children node
+        this.title = $noteTitle.innerText;
+        this.text = $noteText.innerText;
+        this.id = $selectedNote.dataset.idd; // Get id so we can update target note in notes
+     }
 
   }
   
