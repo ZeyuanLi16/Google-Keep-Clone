@@ -30,6 +30,7 @@ class App {
             this.handleFormClick(event);
             this.selectNote(event);
             this.openModal(event); // open the note detail after clicking it
+            this.deleteNote(event); // delete note
         })
 
         // sumit event, add new note
@@ -70,6 +71,7 @@ class App {
             this.style.display = 'none'; 
         })
         
+        // Change note color
         this.$colorTooltip.addEventListener('click', event => {
             const color = event.target.dataset.color; 
             if (color) {
@@ -146,7 +148,7 @@ class App {
                 <div class="toolbar-container">
                     <div class="toolbar">
                     <img class="toolbar-color" data-id="${note.id}" src="https://icon.now.sh/palette">
-                    <img class="toolbar-delete" src="https://icon.now.sh/delete">
+                    <img class="toolbar-delete" data-id="${note.id}" src="https://icon.now.sh/delete">
                     </div>
                 </div>
             </div>
@@ -155,6 +157,7 @@ class App {
     }
 
     openModal(event){
+        if(event.target.matches('.toolbar-delete')) return;  
         if(event.target.closest(".note")){
             this.$modal.classList.toggle("open-modal"); // toggle class name, so we can open and hide mode
             this.$modalTitle.value = this.title;
@@ -195,6 +198,14 @@ class App {
         this.notes = this.notes.map(note =>
             note.id === Number(this.id) ? { ...note, color } : note
         );
+        this.displayNotes();
+    }
+
+    deleteNote(event) {
+        // event.stopPropagation(); // you do not need stop propagation cause you added a condition at openModal()
+        if(!event.target.matches('.toolbar-delete')) return;
+        const id = event.target.dataset.id;
+        this.notes = this.notes.filter(note => note.id !== Number(id));
         this.displayNotes();
     }
   }
