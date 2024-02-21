@@ -16,12 +16,13 @@ class App {
         this.$colorTooltip = document.querySelector('#color-tooltip');
 
         /* Data related variables */
-        this.notes = [];
+        this.notes = JSON.parse(localStorage.getItem('notes')) || [];
         this.title = ''; // for selected note
         this.text = ''; // for selected note
         this.id = ''; // for selected note
 
         this.addEventListeners(); // Add event listener in constructor
+        this.render(); // Display the saved note first loading
     }
 
     addEventListeners(){
@@ -124,7 +125,7 @@ class App {
         };
 
         this.notes = [...this.notes, newNote];
-        this.displayNotes(); // Show all the notes
+        this.render(); // Show all the notes
     }
 
     editNote() {
@@ -134,7 +135,16 @@ class App {
             note.id === Number(this.id) ? { ...note, title, text } : note
         )
 
-        this.displayNotes(); // Call to update the ui, otherwise it won't update
+        this.render(); // Call to update the ui, otherwise it won't update
+    }
+
+    render() {
+        this.saveNotes();
+        this.displayNotes();  
+    }
+      
+    saveNotes() {
+        localStorage.setItem('notes', JSON.stringify(this.notes))  
     }
 
     displayNotes(){
@@ -198,7 +208,7 @@ class App {
         this.notes = this.notes.map(note =>
             note.id === Number(this.id) ? { ...note, color } : note
         );
-        this.displayNotes();
+        this.render();
     }
 
     deleteNote(event) {
@@ -206,7 +216,7 @@ class App {
         if(!event.target.matches('.toolbar-delete')) return;
         const id = event.target.dataset.id;
         this.notes = this.notes.filter(note => note.id !== Number(id));
-        this.displayNotes();
+        this.render();
     }
   }
   
